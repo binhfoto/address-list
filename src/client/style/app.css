@@ -1,0 +1,8 @@
+body {
+    margin: 0;
+    font-weight: 400;
+}
+
+div table tbody tr:nth-child(odd) {
+    background-color: #fafafa;
+}

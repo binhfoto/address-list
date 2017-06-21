@@ -1,0 +1,5 @@
+export default {
+    FORM : 'FORM',
+    GOOGLE_MAP: 'GOOGLE_MAP',
+    AUTO_COMPLETE_INPUT: 'AUTO_COMPLETE_INPUT'
+}
