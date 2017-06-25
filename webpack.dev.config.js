@@ -4,6 +4,7 @@ const HtmlWebpackPlugin = require('html-webpack-plugin');
 const config = {
 
     entry: path.resolve(__dirname, 'src/client/index.js'),
+
     output: {
         /* put 'bundle.js' to folder 'public' after transpiling, as same value as devServer.contentBase */
         path: path.resolve(__dirname, 'public'),
@@ -23,6 +24,8 @@ const config = {
             }
         ]
     },
+
+    devtool: 'source-map',
 
     devServer: {
         /* when inline is true, it enables 'auto refresh' and 'hot module replacement' */
