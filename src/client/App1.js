@@ -1,16 +1,18 @@
-import React, {Component} from "react";
+import React, { Component } from "react";
 import MuiThemeProvider from "material-ui/styles/MuiThemeProvider";
-import {BrowserRouter, Route} from "react-router-dom";
+import { BrowserRouter, Route } from "react-router-dom";
 import Layout from "./component1/Layout";
-import List from "./component1/List";
+import ListLayout from "./component1/list/Layout";
+import EditLayout, { NewLayout } from "./component1/edit/Layout";
 import firebase from "./firebase";
 
 
 import { Provider } from 'react-redux';
-import { combineReducers, createStore, applyMiddleware} from 'redux';
-import { firebaseAddAddress, firebaseDeleteAddress, firebaseEditAddress} from './action';
+import { combineReducers, createStore, applyMiddleware } from 'redux';
+import { firebaseAddAddress, firebaseDeleteAddress, firebaseEditAddress } from './action';
 import addressReducer from './reducer/addresses';
-import exportCsvMiddleware from './middleware/exportCsv'
+import exportCsvMiddleware from './middleware/exportCsv';
+import {editAddress, deleteAddress} from './middleware/address';
 
 import "./style/app.css";
 
@@ -37,8 +39,8 @@ const App = () => {
         addresses: addressReducer
     });
 
-    // apply middle to get state for external component
-    const store = createStore(reducer, {addresses: []}, applyMiddleware(exportCsvMiddleware));
+    // apply middleware to get state for external component
+    const store = createStore(reducer, {addresses: []}, applyMiddleware(exportCsvMiddleware, editAddress, deleteAddress));
 
     firebaseRegister(store.dispatch);
 
@@ -47,7 +49,9 @@ const App = () => {
             <MuiThemeProvider>
                 <BrowserRouter>
                     <Layout>
-                        <Route exact path="/" component={List}/>
+                        <Route exact path="/" component={ListLayout}/>
+                        <Route exact path="/address/new" component={NewLayout}/>
+                        <Route exact path="/address/edit/:createdBy/:id" component={EditLayout}/>
                         {/*<Route exact path="/address/:id" component={(router) => {console.log(router); return <Edit addresses={this.state.addresses}/>}}/>*/}
                     </Layout>
                 </BrowserRouter>

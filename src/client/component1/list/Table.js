@@ -12,8 +12,8 @@ import FlatButton from 'material-ui/FlatButton';
 import EditIcon from 'material-ui/svg-icons/maps/edit-location';
 import DeleteIcon from 'material-ui/svg-icons/communication/location-off';
 import {Link} from 'react-router-dom'
-import PROPERTY_NAMES from '../util/addressPropertyName';
-import {tableRowStyle, tableHeaderStyle} from '../style';
+import PROPERTY_NAMES from '../../util/addressPropertyName';
+import {tableRowStyle, tableHeaderStyle} from '../../style';
 import { connect } from 'react-redux';
 
 const AddressTable = (props) => {
@@ -27,7 +27,7 @@ const AddressTable = (props) => {
                 <TableRowColumn style={tableRowStyle}>{address.city}</TableRowColumn>
                 <TableRowColumn style={tableRowStyle}>{address.country}</TableRowColumn>
                 <TableRowColumn>
-                    <FlatButton label="Edit" primary containerElement={<Link to={`/address/${address.key}`}/>}
+                    <FlatButton label="Edit" primary containerElement={<Link to={`/address/edit/${address.createdBy}/${address.key}`}/>}
                                 icon={<EditIcon/>}/>
                 </TableRowColumn>
                 <TableRowColumn>
