@@ -13,7 +13,11 @@ const handleEditAddress = (address, type) => {
             createdBy: type
         });
     }
-}
+};
+
+const handleDeleteAddress = (key) => {
+    firebase.database().ref('addresses/' + key).set(null);
+};
 
 export const editAddress = ({dispatch, getState}) => next => action => {
 
@@ -26,8 +30,7 @@ export const editAddress = ({dispatch, getState}) => next => action => {
 export const deleteAddress = ({dispatch, getState}) => next => action => {
 
     if(action.type === DELETE_ADDRESS) {
-
-
+        handleDeleteAddress(action.key);
     }
     return next(action);
 };

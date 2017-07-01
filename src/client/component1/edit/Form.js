@@ -10,17 +10,24 @@ class Form extends Component {
 
     constructor(props) {
         super(props);
+
+        this.state = {
+            address: props.address || {}
+        };
+
         this.handleOnChange = this.handleOnChange.bind(this);
     }
 
     handleOnChange(event, newValue) {
-        let address = _.assign({}, this.props.address);
+        let address = _.assign({}, this.state.address);
         address[event.target.id] = newValue;
-        this.props.handleUpdateAddress(address);
+        this.setState({
+            address
+        });
     }
 
     render() {
-        let address = this.props.address;
+        let address = this.state.address;
         return (
             <div>
                 <TextField id={PROPERTY_NAMES.STREET.toLowerCase()} value={address.street || ''}
@@ -48,13 +55,8 @@ class Form extends Component {
     }
 }
 
-Form.onSubmit = (params) => {
-    console.log('onFormSubmit', params);
-};
-
 Form.propTypes = {
-    address: PropTypes.object.isRequired,
-    handleUpdateAddress: PropTypes.func.isRequired
+    address: PropTypes.object.isRequired
 }
 
 export default Form;

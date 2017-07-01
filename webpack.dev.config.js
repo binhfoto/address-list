@@ -49,3 +49,12 @@ const config = {
 };
 
 module.exports = config;
+
+/*
+
+
+new webpack.NoEmitOnErrorsPlugin()
+UglifyPlugin
+
+
+* */

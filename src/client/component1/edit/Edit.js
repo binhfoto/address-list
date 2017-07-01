@@ -1,6 +1,6 @@
 import React, {Component} from "react";
-import PropTypes from 'prop-types'
-import _ from 'lodash';
+import PropTypes from "prop-types";
+import _ from "lodash";
 import {connect} from "react-redux";
 import {withRouter, Link} from "react-router-dom";
 import CardTitle from "material-ui/Card/CardTitle";
@@ -10,8 +10,9 @@ import CancelIcon from "material-ui/svg-icons/device/location-disabled";
 import SubmitIcon from "material-ui/svg-icons/device/location-searching";
 import CurrentAddressButon from "./CurrentAddressButton";
 import {cardActionStyleLeft, cardActionStyleRight} from "../../style";
-import CREATE_METHOD from '../../util/addMethod';
-import {editAddress, EDIT_ADDRESS} from '../../action';
+import CREATE_METHOD from "../../util/addMethod";
+import {editAddress} from "../../action";
+import {convertGoogleMapObjectToAddress} from "../../util";
 
 const CANCEL_ICON = <CancelIcon/>;
 const SUBMIT_ICON = <SubmitIcon/>;
@@ -22,56 +23,82 @@ class Edit extends Component {
 
         super(props);
 
-        this.state = {
+        this.editComponent = {};
+/*        this.state = {
             address: props.address
-        };
+        };*/
 
         this.handleOnSubmit = this.handleOnSubmit.bind(this);
-        this.handleAddressUpdate = this.handleAddressUpdate.bind(this);
+        //this.handleAddressUpdate = this.handleAddressUpdate.bind(this);
         this.handleAddressReturned = this.handleAddressReturned.bind(this);
     }
 
     handleOnSubmit() {
-        this.props.editAddress(this.state.address, CREATE_METHOD.FORM);
+        console.log('editComponent-state', this.editComponent.state);
+        if(this.props.type === CREATE_METHOD.GOOGLE_MAP) {
+            this.handleGoogleMapAddressSubmit();
+            return;
+        }
+
+        this.props.editAddress(this.editComponent.state.address, this.props.type);
         this.props.push('/');
     }
 
+
+    /*handleGoogleMapAddressSubmit() {
+        let address = this.state.address;
+        delete address.googleMap.centerLocation;
+
+        let geocoder = new window.google.maps.Geocoder;
+        geocoder.geocode({'location': address.googleMap.location}, function (results, status) {
+            if (status === 'OK') {
+                if (results[1]) {
+                    let newAddress = convertGoogleMapObjectToAddress(results[1]);
+                    _.merge(address, newAddress, {
+                        googleMap: {
+                            label: results[1].formatted_address,
+                            location: address.location
+                        }
+                    });
+                    this.props.editAddress(address, this.props.type);
+                    this.props.push('/');
+                } else {
+                    window.alert('No address found against selected location');
+                }
+            } else {
+                window.alert('Invalid location, error: ' + status);
+            }
+        }.bind(this));
+    }*/
+
     handleAddressReturned(address) {
-        if (this.state.address.key) {
-            _.merge(address, {key: this.state.address.key});
+        if (this.props.address.key) {
+            _.merge(address, {key: this.props.address.key});
         }
-        if (this.state.address.createdBy) {
-            _.merge(address, {createdBy: this.state.address.createdBy});
+        if (this.props.address.createdBy) {
+            _.merge(address, {createdBy: this.props.address.createdBy});
         }
-        if(this.props.type === CREATE_METHOD.GOOGLE_MAP) {
-            this.setState({
-                zoom: 17,
-                markerLocation: address.googleMap.location,
-                centerLocation: address.googleMap.location
-            });
-            return;
-        }
-        this.setState({
+        this.editComponent.setState({
             address
         });
     }
 
-    handleAddressUpdate(address) {
-        this.setState({ address })
-    }
-
-    /*shouldComponentUpdate() {
-        return true;
+    /*handleAddressUpdate(address) {
+        this.setState({address});
     }*/
 
+    /*shouldComponentUpdate() {
+     return true;
+     }*/
+
+    // handleUpdateAddress={this.handleAddressUpdate}
     render() {
         let link = <Link to="/"/>;
         let EditComponent = this.props.component;
-        //EditComponent.onSubmit
         return (
             <div>
                 <CardTitle title={this.props.label}/>
-                <EditComponent address={this.state.address} handleUpdateAddress={this.handleAddressUpdate} />
+                <EditComponent address={this.props.address} ref={(editComponent) => {this.editComponent = editComponent;}}/>
                 <CardActions style={cardActionStyleLeft}>
                     <CurrentAddressButon onAddressReturned={this.handleAddressReturned}/>
                 </CardActions>
@@ -99,7 +126,7 @@ export default
 withRouter(
     connect(
         /* (state, ownProps) */
-        (state, { component, type, history : { push }, match : { params : { id } } }) => {
+        (state, {component, type, history : {push}, match : {params : {id}}}) => {
 
             let isNew = true;
             let address = {};

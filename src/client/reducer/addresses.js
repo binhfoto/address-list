@@ -8,7 +8,7 @@ import {
 const addresses = (state = [], {type, snapshot}) => {
     switch(type) {
         case FIREBASE_ADD_ADDRESS:
-            return [...state, {key: snapshot.id, ...snapshot.val()}];
+            return [...state, {key: snapshot.key, ...snapshot.val()}];
         case FIREBASE_EDIT_ADDRESS:
             return state.map(item => {
                 return snapshot.key === item.key ? snapshot.val() : item;

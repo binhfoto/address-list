@@ -35,3 +35,10 @@ export const editAddress = (address, createdType) => {
         createdType
     }
 };
+
+export const deleteAddress = (key) => {
+    return {
+        type: DELETE_ADDRESS,
+        key
+    }
+};

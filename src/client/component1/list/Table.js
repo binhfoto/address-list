@@ -15,6 +15,8 @@ import {Link} from 'react-router-dom'
 import PROPERTY_NAMES from '../../util/addressPropertyName';
 import {tableRowStyle, tableHeaderStyle} from '../../style';
 import { connect } from 'react-redux';
+import {deleteAddress} from '../../action';
+
 
 const AddressTable = (props) => {
 
@@ -32,7 +34,7 @@ const AddressTable = (props) => {
                 </TableRowColumn>
                 <TableRowColumn>
                     <FlatButton label="Delete" secondary containerElement={<span/>} icon={<DeleteIcon/>}
-                                />
+                                onTouchTap={() => {props.handleDelete(address.key)}}/>
                 </TableRowColumn>
             </TableRow>
         );
@@ -63,5 +65,10 @@ AddressTable.propTypes = {
 }
 
 export default connect(
-    ({addresses}) => ({addresses})
+    ({addresses}) => ({addresses}),
+    (dispatch) => {
+        return {
+            handleDelete: (key) => {dispatch(deleteAddress(key))}
+        };
+    }
 )(AddressTable);
