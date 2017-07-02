@@ -24,32 +24,37 @@ class Edit extends Component {
         super(props);
 
         this.editComponent = {};
-/*        this.state = {
-            address: props.address
-        };*/
 
         this.handleOnSubmit = this.handleOnSubmit.bind(this);
-        //this.handleAddressUpdate = this.handleAddressUpdate.bind(this);
         this.handleAddressReturned = this.handleAddressReturned.bind(this);
     }
 
     handleOnSubmit() {
-        console.log('editComponent-state', this.editComponent.state);
-        if(this.props.type === CREATE_METHOD.GOOGLE_MAP) {
-            this.handleGoogleMapAddressSubmit();
-            return;
+        switch(this.props.type) {
+            case CREATE_METHOD.FORM:
+                this.handleFormAddressSubmit();
+                return;
+            case CREATE_METHOD.GOOGLE_MAP:
+                this.handleGoogleMapAddressSubmit();
+                return;
+            case CREATE_METHOD.AUTO_COMPLETE_INPUT:
+                this.handleAutoSearchAddressSubmit();
+                return;
+            default:
+                return;
         }
+    }
 
+    handleFormAddressSubmit() {
         this.props.editAddress(this.editComponent.state.address, this.props.type);
         this.props.push('/');
     }
 
+    handleGoogleMapAddressSubmit() {
 
-    /*handleGoogleMapAddressSubmit() {
-        let address = this.state.address;
-        delete address.googleMap.centerLocation;
-
+        let address = this.editComponent.state.address;
         let geocoder = new window.google.maps.Geocoder;
+
         geocoder.geocode({'location': address.googleMap.location}, function (results, status) {
             if (status === 'OK') {
                 if (results[1]) {
@@ -69,7 +74,25 @@ class Edit extends Component {
                 window.alert('Invalid location, error: ' + status);
             }
         }.bind(this));
-    }*/
+    }
+
+    handleAutoSearchAddressSubmit() {
+
+        let address = this.editComponent.state.address;
+
+        let newAddress = (function(_address) {
+            if(_address.street != null && _address.street !== 'N/A') return _address;
+            if(!_address.googleMap || !_address.googleMap.label) return _address;
+
+            let street = _address.googleMap.label.split(',')[0];
+            if(!street) return _address;
+
+            return _.assign({}, _address, {street});
+        })(address);
+
+        this.props.editAddress(newAddress, this.props.type);
+        this.props.push('/');
+    }
 
     handleAddressReturned(address) {
         if (this.props.address.key) {
@@ -83,22 +106,19 @@ class Edit extends Component {
         });
     }
 
-    /*handleAddressUpdate(address) {
-        this.setState({address});
-    }*/
-
     /*shouldComponentUpdate() {
-     return true;
+        return true;
      }*/
 
-    // handleUpdateAddress={this.handleAddressUpdate}
     render() {
         let link = <Link to="/"/>;
         let EditComponent = this.props.component;
         return (
             <div>
                 <CardTitle title={this.props.label}/>
-                <EditComponent address={this.props.address} ref={(editComponent) => {this.editComponent = editComponent;}}/>
+                <EditComponent address={this.props.address} ref={(editComponent) => {
+                    this.editComponent = editComponent;
+                }}/>
                 <CardActions style={cardActionStyleLeft}>
                     <CurrentAddressButon onAddressReturned={this.handleAddressReturned}/>
                 </CardActions>
@@ -123,25 +143,25 @@ Edit.propTypes = {
 };
 
 export default
-withRouter(
-    connect(
-        /* (state, ownProps) */
-        (state, {component, type, history : {push}, match : {params : {id}}}) => {
+    withRouter(
+        connect(
+            /* (state, ownProps) */
+            (state, {component, type, history : {push}, match : {params : {id}}}) => {
 
-            let isNew = true;
-            let address = {};
+                let isNew = true;
+                let address = {};
 
-            if (id && id !== 'new') {
-                isNew = false;
-                address = state.addresses.find(address => (address.key === id));
+                if (id && id !== 'new') {
+                    isNew = false;
+                    address = state.addresses.find(address => (address.key === id));
+                }
+
+                return {component, type, isNew, address, push};
+            },
+            (dispath) => {
+                return {
+                    editAddress: (address, createdType) => dispath(editAddress(address, createdType))
+                }
             }
-
-            return {component, type, isNew, address, push};
-        },
-        (dispath) => {
-            return {
-                editAddress: (address, createdType) => dispath(editAddress(address, createdType))
-            }
-        }
-    )(Edit)
-);
+        )(Edit)
+    );
