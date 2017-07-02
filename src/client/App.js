@@ -59,7 +59,7 @@ class App extends Component {
                 <BrowserRouter>
                     <Layout>
                         <Route exact path="/" component={() => <List addresses={this.state.addresses}/>}/>
-                        <Route exact path="/address/:id" component={() => <Edit addresses={this.state.addresses}/>}/>
+                        <Route exact path="/address/:id" component={(router) => {console.log(router); return <Edit addresses={this.state.addresses}/>}}/>
                     </Layout>
                 </BrowserRouter>
             </MuiThemeProvider>
