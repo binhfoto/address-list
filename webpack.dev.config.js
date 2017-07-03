@@ -1,4 +1,5 @@
 const path = require('path');
+const webpack = require('webpack');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 
 const config = {
@@ -8,7 +9,7 @@ const config = {
     output: {
         /* put 'bundle.js' to folder 'public' after transpiling, as same value as devServer.contentBase */
         path: path.resolve(__dirname, 'public'),
-        filename: 'bundle.js'
+        filename: '[name].js'
     },
 
     module: {
@@ -39,9 +40,15 @@ const config = {
     },
 
     plugins: [
+        new webpack.optimize.CommonsChunkPlugin({
+            name: 'vendor',
+            minChunks: function (module) {
+                return module.context && module.context.indexOf('node_modules') !== -1;
+            }
+        }),
         new HtmlWebpackPlugin({
             /* input html file */
-            template: 'public/index.html',
+            template: 'src/client/template/index.html',
             /* output html file to virtual path , it is fully accessed by http://localhost/index.html */
             filename: 'index.html'
         })

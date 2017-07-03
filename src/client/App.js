@@ -1,101 +1,63 @@
-import React, {Component} from "react";
-import PropTypes from "prop-types";
+import React, { Component } from "react";
 import MuiThemeProvider from "material-ui/styles/MuiThemeProvider";
-import injectTapEventPlugin from "react-tap-event-plugin";
-import {BrowserRouter, Route} from "react-router-dom";
+import { BrowserRouter, Route } from "react-router-dom";
 import Layout from "./component/Layout";
-import List from "./component/List";
-import Edit from "./component/Edit";
+import ListLayout from "./component/list/Layout";
+import EditLayout, { NewLayout } from "./component/edit/Layout";
 import firebase from "./firebase";
+
+
+import { Provider } from 'react-redux';
+import { combineReducers, createStore, applyMiddleware } from 'redux';
+import { firebaseAddAddress, firebaseDeleteAddress, firebaseEditAddress } from './action';
+import addressReducer from './reducer/addresses';
+import exportCsvMiddleware from './middleware/exportCsv';
+import {editAddress, deleteAddress} from './middleware/address';
+
 import "./style/app.css";
 
-class App extends Component {
+const firebaseRegister = (dispatch) => {
 
-    constructor() {
-        super();
-        this.addressesRef = firebase.database().ref().child('addresses');
+    let addressesRef = firebase.database().ref().child('addresses');
 
-        this.state = {
-            addresses: []
-        };
+    addressesRef.on('child_added', (snapshot) => {
+        dispatch(firebaseAddAddress(snapshot));
+    });
 
-        this.handleAddressSubmit = this.handleAddressSubmit.bind(this);
-    }
+    addressesRef.on('child_changed', (snapshot) => {
+        dispatch(firebaseEditAddress(snapshot));
+    });
 
-    componentWillMount() {
+    addressesRef.on('child_removed', (snapshot) => {
+        dispatch(firebaseDeleteAddress(snapshot));
+    });
+};
 
-        injectTapEventPlugin();
+const App = () => {
 
-        this.addressesRef.on('child_added', (snapshot) => {
-            let address = snapshot.val();
-            this.setState({
-                addresses: [...this.state.addresses, {key: snapshot.key, ...address}]
-            });
-        });
+    const reducer = combineReducers({
+        addresses: addressReducer
+    });
 
-        this.addressesRef.on('child_changed', (snapshot) => {
-            let newAddresses = this.state.addresses.map(item => {
-                return snapshot.key === item.key ? snapshot.val() : item;
-            });
+    // apply middleware to get state for external component
+    const store = createStore(reducer, {addresses: []}, applyMiddleware(exportCsvMiddleware, editAddress, deleteAddress));
 
-            this.setState({
-                addresses: newAddresses
-            });
-        });
+    firebaseRegister(store.dispatch);
 
-        this.addressesRef.on('child_removed', (snapshot) => {
-            let newAddresses = this.state.addresses.filter(address => snapshot.key !== address.key);
-            this.setState({
-                addresses: newAddresses
-            });
-        });
-
-
-    }
-
-    render() {
-        return (
+    return (
+        <Provider store={store}>
             <MuiThemeProvider>
                 <BrowserRouter>
                     <Layout>
-                        <Route exact path="/" component={() => <List addresses={this.state.addresses}/>}/>
-                        <Route exact path="/address/:id" component={(router) => {console.log(router); return <Edit addresses={this.state.addresses}/>}}/>
+                        <Route exact path="/" component={ListLayout}/>
+                        <Route exact path="/address/new" component={NewLayout}/>
+                        <Route exact path="/address/edit/:createdBy/:id" component={EditLayout}/>
+                        {/*<Route exact path="/address/:id" component={(router) => {console.log(router); return <Edit addresses={this.state.addresses}/>}}/>*/}
                     </Layout>
                 </BrowserRouter>
             </MuiThemeProvider>
-        );
-    }
-
-    getChildContext() {
-        return {
-            handleAddressSubmit: this.handleAddressSubmit,
-            handleAddressDelete: this.handleAddressDelete
-        };
-    }
-
-
-    handleAddressSubmit(address, type) {
-
-        let isUpdate = address.key ? true : false;
-
-        if (isUpdate) {
-            firebase.database().ref('addresses/' + address.key).set(address);
-        } else {
-            firebase.database().ref().child('addresses').push({
-                ...address,
-                createdBy: type
-            });
-        }
-    }
-
-    handleAddressDelete(key) {
-        firebase.database().ref('addresses/' + key).set(null);
-    }
-}
-
-App.childContextTypes = {
-    handleAddressSubmit: PropTypes.func,
-    handleAddressDelete: PropTypes.func
+        </Provider>
+    );
 };
 
 export default App;
