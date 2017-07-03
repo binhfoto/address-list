@@ -6,7 +6,7 @@
   "scripts": {
     "start": "webpack-dev-server --config webpack.dev.config.js",
     "build": "webpack -p --config webpack.prod.config.js",
-    "serve": "npm run build && node index.js",
+    "serve": "npm install && npm run build && node index.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "naibinh",
@@ -37,6 +37,8 @@
     "morgan": "^1.8.2",
     "path": "^0.12.7",
     "prop-types": "^15.5.10",
+    "react": "^15.6.1",
+    "react-dom": "^15.6.1",
     "react-geosuggest": "^2.3.3",
     "react-redux": "^5.0.5",
     "react-router-dom": "^4.1.1",
